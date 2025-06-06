@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Football SUIII Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: green;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #game {
+      width: 400px;
+      height: 600px;
+      background: linear-gradient(#0b6623, #1e8449);
+      margin: 20px auto;
+      border: 5px solid white;
+      position: relative;
+    }
+    #player {
+      width: 50px;
+      height: 50px;
+      background: blue;
+      position: absolute;
+      bottom: 20px;
+      left: 175px;
+      border-radius: 50%;
+    }
+    #ball {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 3px solid black;
+      position: absolute;
+      bottom: 80px;
+      left: 190px;
+      border-radius: 50%;
+      display: none;
+    }
+    #goal {
+      width: 150px;
+      height: 30px;
+      background: white;
+      position: absolute;
+      top: 0;
+      left: 125px;
+      border-bottom: 5px solid red;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+    }
+    #goalkeeper {
+      width: 50px;
+      height: 20px;
+      background: black;
+      position: absolute;
+      top: 30px;
+      left: 125px;
+    }
+    #scoreboard {
+      color: white;
+      font-size: 16px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+    #suii {
+      position: absolute;
+      top: 200px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      font-weight: bold;
+      color: gold;
+      display: none;
+      animation: suiiAnim 1s ease-out;
+    }
+    @keyframes suiiAnim {
+      0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -20px) scale(1.1); opacity: 1; }
+      100% { transform: translate(-50%, -40px) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="goal">GOAL</div>
+    <div id="goalkeeper"></div>
+    <div id="player"></div>
+    <div id="ball"></div>
+    <div id="scoreboard">Score: 0</div>
+    <div id="suii">SUIII! 🥳</div>
+  </div>
+
+  <script>
+    const player = document.getElementById("player");
+    const ball = document.getElementById("ball");
+    const goalkeeper = document.getElementById("goalkeeper");
+    const scoreText = document.getElementById("scoreboard");
+    const suiiText = document.getElementById("suii");
+
+    let score = 0;
+    let isBallMoving = false;
+
+    // Move player
+    document.addEventListener("keydown", (e) => {
+      const left = parseInt(window.getComputedStyle(player).left);
+      const gameWidth = 400;
+
+      if (e.key === "ArrowLeft" && left > 0) {
+        player.style.left = left - 20 + "px";
+      } else if (e.key === "ArrowRight" && left < gameWidth - 50) {
+        player.style.left = left + 20 + "px";
+      } else if (e.key === " " && !isBallMoving) {
+        kickBall();
+      }
+    });
+
+    // Kick the ball
+    function kickBall() {
+      isBallMoving = true;
+      ball.style.display = "block";
+      ball.style.left = player.offsetLeft + 15 + "px";
+      ball.style.bottom = "80px";
+
+      let ballInterval = setInterval(() => {
+        const bottom = parseInt(ball.style.bottom);
+        const ballLeft = parseInt(ball.style.left);
+        const goalieLeft = parseInt(goalkeeper.style.left);
+
+        if (bottom >= 60 && bottom < 90 && ballLeft >= goalieLeft && ballLeft <= goalieLeft + 50) {
+          // Blocked by goalkeeper
+          ball.style.display = "none";
+          clearInterval(ballInterval);
+          isBallMoving = false;
+          return;
+        }
+
+        if (bottom >= 570) {
+          // Scored goal
+          if (ballLeft >= 125 && ballLeft <= 275) {
+            score++;
+            scoreText.textContent = `Score: ${score}`;
+            showSuii();
+          }
+          ball.style.display = "none";
+          clearInterval(ballInterval);
+          isBallMoving = false;
+        } else {
+          ball.style.bottom = bottom + 10 + "px";
+        }
+      }, 30);
+    }
+
+    // Goalkeeper left-right motion
+    let direction = 1;
+    setInterval(() => {
+      const left = parseInt(goalkeeper.style.left);
+      if (left <= 125) direction = 1;
+      if (left >= 225) direction = -1;
+      goalkeeper.style.left = left + direction * 5 + "px";
+    }, 100);
+
+    // Show "SUIII!" text
+    function showSuii() {
+      suiiText.style.display = "block";
+      suiiText.style.animation = "suiiAnim 1s ease-out";
+      setTimeout(() => {
+        suiiText.style.display = "none";
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
